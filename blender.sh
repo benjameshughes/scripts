@@ -46,12 +46,32 @@ function select_version {
 function install_blender {
     clear_screen
     display_header
+    echo "Checking for dependencies..."
+    echo ""
+    # Check if dependencies are installed
+    if ! dpkg -s wget curl libgl1-mesa-dev libxi6 libgconf-2-4 > /dev/null 2>&1; then
+        echo "Some dependencies are missing."
+        read -p "Do you want to install them? (y/n) " choice
+        case $choice in
+            y|Y)
+                # Install missing dependencies
+                sudo apt-get update
+                sudo apt-get install -y wget curl libgl1-mesa-dev libxi6 libgconf-2-4
+                ;;
+            n|N)
+                echo "Exiting Blender installation. Please install the missing dependencies and run this script again."
+                exit 1
+                ;;
+            *)
+                echo "Invalid choice. Please run this script again to install Blender."
+                exit 1
+                ;;
+        esac
+    fi
+    clear_screen
+    display_header
     echo "Installing Blender version $version ..."
     echo ""
-    # Update package index
-    sudo apt update
-    # Install dependencies
-    sudo apt install -y wget curl libgl1-mesa-dev libxi6 libgconf-2-4
     # Download Blender
     wget https://download.blender.org/release/Blender$version/blender-$version-linux-x64.tar.xz
     # Extract Blender archive
@@ -65,13 +85,3 @@ function install_blender {
     echo ""
     echo "Blender version $version has been installed successfully!"
 }
-
-# Clear the screen and display the header
-clear_screen
-display_header
-
-# Prompt the user to select a version of Blender
-select_version
-
-# Install Blender
-install_blender
